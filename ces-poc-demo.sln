@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34309.116
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ces-poc-demo", "ces-poc-demo\ces-poc-demo.csproj", "{68C839BC-70DF-4630-A488-6DA5EABB9388}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ces-poc-demo.test", "ces-poc-demo.test\ces-poc-demo.test.csproj", "{72D7DC95-923F-4B30-BFBD-A8122AB88059}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{68C839BC-70DF-4630-A488-6DA5EABB9388}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68C839BC-70DF-4630-A488-6DA5EABB9388}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68C839BC-70DF-4630-A488-6DA5EABB9388}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68C839BC-70DF-4630-A488-6DA5EABB9388}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72D7DC95-923F-4B30-BFBD-A8122AB88059}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72D7DC95-923F-4B30-BFBD-A8122AB88059}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72D7DC95-923F-4B30-BFBD-A8122AB88059}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72D7DC95-923F-4B30-BFBD-A8122AB88059}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4E2EA277-23DB-44A6-9CAE-4F5178B8FFAC}
+	EndGlobalSection
+EndGlobal
