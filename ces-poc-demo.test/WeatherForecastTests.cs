@@ -1,88 +1,125 @@
+using AutoFixture;
+using AutoFixture.AutoMoq;
 using ces_poc_demo.Controllers;
-using ces_poc_demo.Implementation;
 using ces_poc_demo.Tests;
+using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace ces_poc_demo.test
 {
     public class WeatherForecastTests
     {
-        WeatherForecastController oWeather;
+        private WeatherForecastController _controller;
+        private IFixture _fixture;
+        private MockHttpSession _httpcontext;
 
-        public WeatherForecastTests() 
+        public WeatherForecastTests()
         {
-            List<WeatherForecast> forecasts = [
-                new WeatherForecast() { ID = 1, Summary = "Freezing", TemperatureC = 4 },
-                new WeatherForecast() { ID = 2, Summary = "Chilly", TemperatureC = 10 },
-                new WeatherForecast() { ID = 3, Summary = "Cool", TemperatureC = 15 },
-                new WeatherForecast() { ID = 4, Summary = "Warm", TemperatureC = 25 },
-                new WeatherForecast() { ID = 5, Summary = "Hot", TemperatureC = 35 }
-            ];
-            
-            MockHttpSession httpcontext = new();
-            httpcontext.SetObjectAsJson("forecasts", forecasts);
-            oWeather = new WeatherForecastController
+            _fixture = new Fixture().Customize(new AutoMoqCustomization());
+            var forecasts = _fixture.CreateMany<WeatherForecast>(3).ToList();
+            _httpcontext = new();
+            _httpcontext.SetObjectAsJson("forecasts", forecasts);
+            _controller = new WeatherForecastController
             {
                 ControllerContext = new ControllerContext 
                 {
                     HttpContext = new DefaultHttpContext()
                 }
             };
-            oWeather.HttpContext.Session = httpcontext;
+            _controller.HttpContext.Session = _httpcontext;
         }
 
         [Fact]
-        public void Get_WeatherForeCasts_Success()
+        public void Get_WeatherForeCasts_ReturnsOk()
         {
-            List<WeatherForecast> forecasts = [
-                new WeatherForecast() { ID = 1, Summary = "Freezing", TemperatureC = 4 },
-                new WeatherForecast() { ID = 2, Summary = "Chilly", TemperatureC = 10 },
-                new WeatherForecast() { ID = 3, Summary = "Cool", TemperatureC = 15 },
-                new WeatherForecast() { ID = 4, Summary = "Warm", TemperatureC = 25 },
-                new WeatherForecast() { ID = 5, Summary = "Hot", TemperatureC = 35 }
-            ];
-            MockHttpSession httpcontext = new();
-            httpcontext.SetObjectAsJson("forecasts", JsonConvert.SerializeObject(forecasts));
-            var result = oWeather.Get();
-            Assert.Equal(typeof(OkObjectResult), result.GetType());
+            var result = _controller.Get();
+            
+            var objectResult = result.Should().BeOfType<OkObjectResult>().Subject;
+            objectResult.StatusCode.Should().Be(200);
+            var actualValue = objectResult.Value.Should().BeOfType<List<WeatherForecast>>().Subject;
+            actualValue.Should().NotBeNull();
+            actualValue.Should().HaveCount(3);
         }
 
         [Fact]
-        public void Add_WeatherForeCasts_Success()
+        public void Add_WeatherForeCasts_ReturnsCreated()
         {
-            WeatherForecast forecast = new()
-            {
-                ID = 6,
-                Summary = "Spring",
-                TemperatureC = 20
-            };
+            WeatherForecast forecast = _fixture.Create<WeatherForecast>();
+            
+            var result = _controller.Add(forecast);
 
-            var result = oWeather.Add(forecast);
-            Assert.Equal(typeof(CreatedResult), result.GetType());
+            result.Should().BeOfType<CreatedResult>();
         }
 
         [Fact]
-        public void Update_WeatherForeCasts_Success()
+        public void Update_WeatherForeCasts_ReturnsNoContent()
         {
-            WeatherForecast forecast = new()
-            {
-                ID = 5,
-                Summary = "Hot",
-                TemperatureC = 40
-            };
+            var forecasts = _httpcontext.GetObjectFromJson<List<WeatherForecast>>("forecasts");
+            WeatherForecast forecast = forecasts.FirstOrDefault();
+            forecast.Summary = "Sunny";
 
-            var result = oWeather.Update(forecast);
-            Assert.Equal(typeof(NoContentResult), result.GetType());
+            var result = _controller.Update(forecast);
+
+            result.Should().BeOfType<NoContentResult>();
         }
 
         [Fact]
-        public void Delete_WeatherForeCasts_Success()
+        public void Delete_WeatherForeCasts_ReturnsNoContent()
         {
-            var result = oWeather.Delete(2);
-            Assert.Equal(typeof(NoContentResult), result.GetType());
+            var forecasts = _httpcontext.GetObjectFromJson<List<WeatherForecast>>("forecasts");
+            int ID = forecasts.LastOrDefault().ID;
+
+            var result = _controller.Delete(ID);
+
+            result.Should().BeOfType<NoContentResult>();
+        }
+
+        [Fact]
+        public void Add_WeatherForecasts_InvalidTemperature_ReturnsBadRequest()
+        {
+            _controller.ModelState.AddModelError("TemperatureC", "The field TemperatureC must be between -270 and 270.");
+            _fixture.Customize<WeatherForecast>(x => x.With(x => x.TemperatureC, 1000));
+            var forecast = _fixture.Create<WeatherForecast>();
+
+            var result = _controller.Add(forecast);
+
+            result.Should().BeOfType<BadRequestObjectResult>();
+        }
+
+        [Fact]
+        public void Add_WeatherForecasts_InvalidSummary_ReturnsBadRequest()
+        {
+            _controller.ModelState.AddModelError("Summary", "The field Summary must be a string or array type with a minimum length of '3'.");
+            _fixture.Customize<WeatherForecast>(x => x.With(x => x.Summary, "HT"));
+            var forecast = _fixture.Create<WeatherForecast>();
+
+            var result = _controller.Add(forecast);
+
+            var actualValue = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            actualValue.StatusCode.Should().Be(400);
+            ((ModelStateDictionary.ValueEnumerable)actualValue.Value).AsEnumerable().ToList()[0].Errors[0].ErrorMessage.Should().Be("The field Summary must be a string or array type with a minimum length of '3'.");            
+        }
+
+        [Fact]
+        public void Update_WeatherForecasts_InvalidWeatherForecast_ReturnsNotFound()
+        {
+            var forecast = _fixture.Create<WeatherForecast>();
+
+            var result = _controller.Update(forecast);
+
+            result.Should().BeOfType<NotFoundResult>();
+        }
+
+        [Fact]
+        public void Delete_WeatherForecasts_InvalidID_ReturnsNotFound()
+        {
+            var forecastID = _fixture.Create<WeatherForecast>().ID;
+
+            var result = _controller.Delete(forecastID);
+
+            result.Should().BeOfType<NotFoundResult>();
         }
     }
 }

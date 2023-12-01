@@ -7,12 +7,10 @@ namespace ces_poc_demo
         [Key]
         public int ID { get; set; }
 
-        [Required]
         [Range(-270, 270)]
         public int TemperatureC { get; set; }
 
-        [Required]
         [MinLength(3)]
-        public string? Summary { get; set; }
+        public string Summary { get; set; }
     }
 }

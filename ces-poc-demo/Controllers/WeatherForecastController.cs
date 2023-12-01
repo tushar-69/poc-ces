@@ -16,11 +16,14 @@ namespace ces_poc_demo.Controllers
         [HttpPost(Name = "AddWeatherForeCast")]
         public IActionResult Add(WeatherForecast weatherForecast)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState.Values);
+
             var forecasts = HttpContext.Session.GetObjectFromJson<List<WeatherForecast>>("forecasts");
             if (forecasts != null)
                 forecasts.Add(weatherForecast);
             else
-                forecasts = new List<WeatherForecast>() { weatherForecast };
+                forecasts = [weatherForecast];
             HttpContext.Session.SetObjectAsJson("forecasts", forecasts);
 
             return Created();
@@ -29,6 +32,9 @@ namespace ces_poc_demo.Controllers
         [HttpPut(Name = "UpdateWeatherForeCast")]
         public IActionResult Update(WeatherForecast weatherForecast)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState.Values);
+
             var forecasts = HttpContext.Session.GetObjectFromJson<List<WeatherForecast>>("forecasts");
             var forecast = forecasts?.Where(x => x.ID == weatherForecast.ID).FirstOrDefault();
 
