@@ -1,0 +1,6 @@
+@ces_poc_demo_HostAddress = http://localhost:5082
+
+GET {{ces_poc_demo_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
