@@ -32,7 +32,7 @@ namespace ces_poc_demo.test
         }
 
         [Fact]
-        public void Get_WeatherForeCasts_ReturnsOk()
+        public void Get_WeatherForeCasts_ReturnsWeatherList()
         {
             var result = _controller.Get();
             
@@ -44,7 +44,7 @@ namespace ces_poc_demo.test
         }
 
         [Fact]
-        public void Add_WeatherForeCasts_ReturnsCreated()
+        public void Add_WeatherForeCast_ReturnsCreated()
         {
             WeatherForecast forecast = _fixture.Create<WeatherForecast>();
             
@@ -77,7 +77,7 @@ namespace ces_poc_demo.test
         }
 
         [Fact]
-        public void Add_WeatherForecasts_InvalidTemperature_ReturnsBadRequest()
+        public void Add_InvalidTemperature_ReturnsBadRequestValidationError()
         {
             _controller.ModelState.AddModelError("TemperatureC", "The field TemperatureC must be between -270 and 270.");
             _fixture.Customize<WeatherForecast>(x => x.With(x => x.TemperatureC, 1000));
@@ -89,7 +89,7 @@ namespace ces_poc_demo.test
         }
 
         [Fact]
-        public void Add_WeatherForecasts_InvalidSummary_ReturnsBadRequest()
+        public void Add_InvalidSummary_ReturnsBadRequestValidationError()
         {
             _controller.ModelState.AddModelError("Summary", "The field Summary must be a string or array type with a minimum length of '3'.");
             _fixture.Customize<WeatherForecast>(x => x.With(x => x.Summary, "HT"));
@@ -103,7 +103,7 @@ namespace ces_poc_demo.test
         }
 
         [Fact]
-        public void Update_WeatherForecasts_InvalidWeatherForecast_ReturnsNotFound()
+        public void Update_InvalidWeatherForecast_ReturnsNotFound()
         {
             var forecast = _fixture.Create<WeatherForecast>();
 
@@ -113,7 +113,7 @@ namespace ces_poc_demo.test
         }
 
         [Fact]
-        public void Delete_WeatherForecasts_InvalidID_ReturnsNotFound()
+        public void Delete_InvalidID_ReturnsNotFound()
         {
             var forecastID = _fixture.Create<WeatherForecast>().ID;
 
